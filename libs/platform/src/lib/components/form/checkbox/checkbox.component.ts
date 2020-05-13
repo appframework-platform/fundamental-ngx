@@ -65,11 +65,7 @@ export class CheckboxComponent extends BaseInput implements AfterViewInit {
     }
     set value(selectValue: any) {
         if (selectValue !== this.value) {
-            // baseInput class is calling this.onchange(value),
-            // which causing Expression change error, so doing all steps here.
             this._value = selectValue;
-            this.stateChanges.next('writeValue');
-            this._cd.markForCheck();
         }
     }
 
@@ -103,9 +99,12 @@ export class CheckboxComponent extends BaseInput implements AfterViewInit {
 
     /** ControlvalueAccessor */
     writeValue(value: any): void {
-        if (value) {
+        // filter out ngModel formcontrol initialization to null
+        if (value !== null) {
             // formcontrol is expected as array or binary
             this._setCoreCheckboxControl(value);
+            this._changeDetector.markForCheck();
+            this.stateChanges.next('writeValue');
         }
     }
 
@@ -115,6 +114,7 @@ export class CheckboxComponent extends BaseInput implements AfterViewInit {
             // updating checkbox values property for this custom checkbox
             this.corecheckbox.values.trueValue = this.value;
             this.corecheckbox.values.falseValue = undefined;
+            // values of corecheckbox
 
             // set core checkbox control value based on platform checkbox control value
             if (this.value && this.multiSelectModel && this.multiSelectModel.includes(this.value)) {
@@ -135,9 +135,11 @@ export class CheckboxComponent extends BaseInput implements AfterViewInit {
     }
 
     /** update controller on checkbox state change */
-    public onClick(): void {
+    public onModelChange(): void {
         this.checkboxValue = this.corecheckbox.checkboxValue;
         this._updateModel();
+        this.stateChanges.next('onModelChange');
+        this._changeDetector.markForCheck();
     }
 
     /** @hidden
@@ -212,7 +214,6 @@ export class CheckboxComponent extends BaseInput implements AfterViewInit {
 
             this.multiSelectModel = value;
             this.onChange(this.multiSelectModel);
-            this._changeDetector.detectChanges();
         } else {
             // handling ngmodel/formcontrol as Binary value.
             if (this.isBinary && !this.checkboxValue && !value) {

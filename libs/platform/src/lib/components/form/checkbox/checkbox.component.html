@@ -9,7 +9,7 @@
         [state]="status"
         [compact]="contentDensity == 'compact'"
         [ngModel]="checkboxValue"
-        (ngModelChange)="onClick()"
+        (ngModelChange)="onModelChange()"
     >
         <ng-content></ng-content>
     </fd-checkbox>
