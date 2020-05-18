@@ -1,10 +1,12 @@
 import {
     AfterContentInit,
+    ChangeDetectionStrategy,
+    Component,
     ContentChild,
-    Directive,
     EventEmitter,
     HostBinding,
-    Input, OnDestroy,
+    Input,
+    OnDestroy,
     Output
 } from '@angular/core';
 import { NestedLinkDirective } from '../nested-link/nested-link.directive';
@@ -14,12 +16,15 @@ import { NestedItemService } from './nested-item.service';
 import { NestedListContentDirective } from '../nested-content/nested-list-content.directive';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { NestedListStateService } from '../nested-list-state.service';
 
-@Directive({
+@Component({
     selector: '[fdNestedItem], [fd-nested-list-item]',
     providers: [
         NestedItemService
-    ]
+    ],
+    templateUrl: 'nested-item.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NestedItemDirective implements AfterContentInit, NestedItemInterface, OnDestroy {
 
@@ -43,6 +48,9 @@ export class NestedItemDirective implements AfterContentInit, NestedItemInterfac
     @Output()
     readonly keyboardTriggered: EventEmitter<KeyboardEvent> = new EventEmitter<KeyboardEvent>();
 
+    _hasChildren: boolean = false;
+    _condensed: boolean = false;
+
     /** @hidden */
     @HostBinding('class.fd-nested-list__item')
     fdNestedListItemClass: boolean = true;
@@ -65,7 +73,8 @@ export class NestedItemDirective implements AfterContentInit, NestedItemInterfac
     /** @hidden */
     constructor (
         private _itemService: NestedItemService,
-        private _keyboardService: NestedListKeyboardService
+        private _keyboardService: NestedListKeyboardService,
+        private _stateService: NestedListStateService
     ) {}
 
     /** @hidden */
@@ -76,6 +85,7 @@ export class NestedItemDirective implements AfterContentInit, NestedItemInterfac
 
     /** @hidden */
     ngAfterContentInit(): void {
+        this._condensed = this._stateService.condensed;
         this._setUpSubscriptions();
         this._propagateHasChildrenProperty();
         this._passItemReferences();
@@ -198,6 +208,7 @@ export class NestedItemDirective implements AfterContentInit, NestedItemInterfac
 
     /** @hidden */
     private _propagateHasChildrenProperty(): void {
+        this._hasChildren = this.hasChildren;
         if (this.contentItem && this.hasChildren) {
             this.contentItem.hasChildren = true;
             this.contentItem.changeDetRef.detectChanges();

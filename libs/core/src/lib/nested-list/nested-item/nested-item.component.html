@@ -1,0 +1,14 @@
+<ng-container *ngIf="_condensed && _hasChildren">
+    <fd-nested-list-popover [>
+        <ng-container [ngTemplateOutlet]="templateRef"></ng-container>
+    </fd-nested-list-popover>
+</ng-container>
+<ng-container *ngIf="!_condensed || !_hasChildren">
+    <ng-container [ngTemplateOutlet]="templateRef"></ng-container>
+
+</ng-container>
+
+
+<ng-template #templateRef>
+    <ng-content></ng-content>
+</ng-template>
